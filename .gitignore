@@ -8,4 +8,6 @@
 /public/bundles/
 /var/
 /vendor/
+/.idea/
+/.vscode/
 ###< symfony/framework-bundle ###
