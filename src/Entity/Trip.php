@@ -57,10 +57,16 @@ class Trip
      */
     private $routes;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Point", mappedBy="trip")
+     */
+    private $points;
+
     public function __construct()
     {
         $this->tracks = new ArrayCollection();
         $this->routes = new ArrayCollection();
+        $this->points = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -172,6 +178,37 @@ class Trip
             // set the owning side to null (unless already changed)
             if ($route->getTrip() === $this) {
                 $route->setTrip(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Point[]
+     */
+    public function getPoints(): Collection
+    {
+        return $this->points;
+    }
+
+    public function addPoint(Point $point): self
+    {
+        if (!$this->points->contains($point)) {
+            $this->points[] = $point;
+            $point->setTrip($this);
+        }
+
+        return $this;
+    }
+
+    public function removePoint(Point $point): self
+    {
+        if ($this->points->contains($point)) {
+            $this->points->removeElement($point);
+            // set the owning side to null (unless already changed)
+            if ($point->getTrip() === $this) {
+                $point->setTrip(null);
             }
         }
 
