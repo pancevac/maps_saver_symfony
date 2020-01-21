@@ -2,14 +2,16 @@
 
 namespace App\Controller;
 
+use App\Entity\Trip;
 use App\Repository\TripRepository;
+use App\Service\TripService;
 use App\Service\GpxConverter;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
-class TripController extends AbstractController
+class TripController extends BaseController
 {
     /**
      * Return list of trips resource owned by auth user.
@@ -29,7 +31,7 @@ class TripController extends AbstractController
         );
 
         return $this->json([
-            'trips' => $trips
+            'data' => $trips
         ], 200, [], ['groups' => 'main']);
     }
 
@@ -77,7 +79,9 @@ class TripController extends AbstractController
             ->toXML()
             ->saveXML();
 
-        return new JsonResponse($gpx);
+        return new JsonResponse([
+            'response' => $gpx
+        ]);
     }
 
     /**
@@ -87,11 +91,42 @@ class TripController extends AbstractController
      *
      * @param Request $request
      * @param GpxConverter $converter
+     * @param TripService $tripService
      * @return JsonResponse
      */
-    public function store(Request $request, GpxConverter $converter): JsonResponse
+    public function store(Request $request, GpxConverter $converter, TripService $tripService): JsonResponse
     {
-        // TODO implement
+        // parse and load coordinates from gpx file
+        try {
+            $converter->load();
+        } catch (\Exception $e) {
+            throw new HttpException(JsonResponse::HTTP_UNPROCESSABLE_ENTITY,'Error while loading gpx file!');
+        }
+
+        // create trip
+        $trip = new Trip();
+        $trip->setName($request->get('name'));
+        $trip->setUser($this->getUser());
+        $trip->setCreator($converter->getCreator());
+        $trip->setMetadata(''); // TODO implement this as json
+
+        // TODO implement and research validation logic
+        /*$errors = $validator->validate($trip);
+
+        if (count($errors) > 0) {
+            return new JsonResponse((string) $errors, JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+        }*/
+
+        // save trip with relations to db
+        $tripService->setTrip($trip)
+            ->setTracks($converter->getTracks())
+            ->setRoutes($converter->getRoutes())
+            ->setWaypoints($converter->getWaypoints())
+            ->save();
+
+        return $this->json([
+            'message' => 'Successfully saved trip!'
+        ]);
     }
 
     /**
