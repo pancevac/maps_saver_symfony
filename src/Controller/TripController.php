@@ -6,10 +6,12 @@ use App\Entity\Trip;
 use App\Repository\TripRepository;
 use App\Service\TripService;
 use App\Service\GpxConverter;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class TripController extends BaseController
 {
@@ -51,9 +53,7 @@ class TripController extends BaseController
             'user' => $this->getUser()
         ]);
 
-        if (!$trip) {
-            return $this->json(['message' => 'Resource not found!'], 404);
-        }
+        if (!$trip) return $this->abort();
 
         return $this->json($trip, 200, [], ['groups' => 'main']);
     }
@@ -74,6 +74,8 @@ class TripController extends BaseController
             'user' => $this->getUser(),
             'id' => $id
         ]);
+
+        if (!$trip) return $this->abort();
 
         $gpx = $converter->makeGPXFile($trip)
             ->toXML()
@@ -132,27 +134,71 @@ class TripController extends BaseController
     /**
      * Update trip info owned by the auth user.
      *
-     * @Route("/api/trips/{id}", name="trip_update", methods={"PUT", "PATCH"})
+     * @Route("/api/trips/{id}", name="trip_update", methods={"PUT"})
      *
      * @param int $id
      * @param Request $request
+     * @param EntityManagerInterface $em
+     * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    public function update(int $id, Request $request): JsonResponse
+    public function update(int $id, Request $request, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
-        // TODO implement
+        $body = $request->getContent();
+        $data = json_decode($body);
+
+        $repository = $em->getRepository(Trip::class);
+        $trip = $repository->findOneBy([
+            'user' => $this->getUser(),
+            'id' => $id
+        ]);
+
+        if (!$trip) return $this->abort();
+
+        $trip->setName($data->name);
+
+        // Validate
+        $errors = $validator->validate($trip);
+
+        if (count($errors) > 0) {
+            return new JsonResponse([
+                'error' => 'Bla bla'
+            ]);
+        }
+
+        $em->flush();
+
+        return new JsonResponse(['message' => 'Trip successfully updated.']);
     }
 
     /**
      * Delete trip owned by the auth user.
      *
-     * @Route("/api/{id}", name="trip_delete", methods={"DELETE"})
+     * @Route("/api/trips/{id}", name="trip_delete", methods={"DELETE"})
      *
      * @param int $id
+     * @param EntityManagerInterface $entityManager
      * @return JsonResponse
      */
-    public function delete(int $id): JsonResponse
+    public function delete(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
-        // TODO implement
+        $repository = $entityManager->getRepository(Trip::class);
+
+        $trip = $repository->findOneBy([
+            'user' => $this->getUser(),
+            'id' => $id
+        ]);
+
+        if (!$trip) return $this->abort();
+
+        $entityManager->remove($trip);
+        $entityManager->flush();
+
+        return new JsonResponse(['message' => 'Successfully deleted trip.']);
+    }
+
+    private function abort(int $status = 404)
+    {
+        return new JsonResponse(['message' => 'Resource not found!'], 404);
     }
 }

@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\TripRepository")
@@ -26,12 +27,23 @@ class Trip
     /**
      * @ORM\Column(type="string", length=255)
      * @Groups("main")
+     * @Assert\NotBlank(message="Trip name is required")
+     * @Assert\Length(
+     *     min="3",
+     *     max="255",
+     *     minMessage = "Name of trip must be at least {{ limit }} characters long",
+     *     maxMessage = "Name of trip cannot be longer than {{ limit }} characters"
+     * )
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=100, nullable=true)
      * @Groups("main")
+     * @Assert\Length(
+     *     max="100",
+     *     maxMessage = "Creator name cannot be longer than {{ limit }} characters"
+     * )
      */
     private $creator;
 
