@@ -165,6 +165,9 @@
             "config/packages/security_checker.yaml"
         ]
     },
+    "sibyx/phpgpx": {
+        "version": "1.0-rc5"
+    },
     "stof/doctrine-extensions-bundle": {
         "version": "1.2",
         "recipe": {
