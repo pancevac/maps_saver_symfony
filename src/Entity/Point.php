@@ -2,12 +2,13 @@
 
 namespace App\Entity;
 
+use App\Utils\MassSavingInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PointRepository")
  */
-class Point
+class Point implements MassSavingInterface
 {
     /**
      * @ORM\Id()
@@ -170,6 +171,21 @@ class Point
     public function setTrip(?Trip $trip): self
     {
         $this->trip = $trip;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hydrate(array $data): MassSavingInterface
+    {
+        $this->latitude = $data['latitude'];
+        $this->longitude = $data['longitude'];
+        $this->elevation = $data['elevation'];
+        $this->time = $data['time'];
+        $this->name = $data['name'];
+        $this->description = $data['description'];
 
         return $this;
     }

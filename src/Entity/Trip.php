@@ -48,17 +48,17 @@ class Trip
     private $user;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Track", mappedBy="trip", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\Track", mappedBy="trip", orphanRemoval=true, cascade={"persist", "remove"})
      */
     private $tracks;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Route", mappedBy="trip", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\Route", mappedBy="trip", orphanRemoval=true, cascade={"persist", "remove"})
      */
     private $routes;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Point", mappedBy="trip")
+     * @ORM\OneToMany(targetEntity="App\Entity\Point", mappedBy="trip", cascade={"persist", "remove"})
      */
     private $points;
 

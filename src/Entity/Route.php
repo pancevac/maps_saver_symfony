@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Utils\MassSavingInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -9,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\RouteRepository")
  */
-class Route
+class Route implements MassSavingInterface
 {
     /**
      * @ORM\Id()
@@ -35,7 +36,7 @@ class Route
     private $trip;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Point", mappedBy="route")
+     * @ORM\OneToMany(targetEntity="App\Entity\Point", mappedBy="route", cascade={"persist", "remove"})
      */
     private $points;
 
@@ -112,6 +113,16 @@ class Route
                 $point->setRoute(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hydrate(array $data): MassSavingInterface
+    {
+        $this->name = $data['name'];
 
         return $this;
     }
