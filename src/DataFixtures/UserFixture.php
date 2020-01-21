@@ -20,7 +20,7 @@ class UserFixture extends BaseFixture
 
     protected function loadData(ObjectManager $manager)
     {
-        $this->createMany(5, 'main_users', function ($i) {
+        $this->createMany(5, 'users', function ($i) {
             $user = new User();
             $user->setEmail("user$i@mail.com");
             $user->setUsername($this->faker->firstName);
