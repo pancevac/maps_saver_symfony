@@ -59,21 +59,31 @@ class TripController extends AbstractController
     /**
      * Return generated gxp file owned by the auth user.
      *
-     * @Route("/trips/gpx/{id}", name="trip_gpx", methods={"GET"})
+     * @Route("/api/trips/gpx/{id}", name="trip_gpx", methods={"GET"})
      *
      * @param int $id
+     * @param TripRepository $repository
      * @param GpxConverter $converter
      * @return JsonResponse
      */
-    public function getGpx(int $id, GpxConverter $converter): JsonResponse
+    public function getGpx(int $id, TripRepository $repository, GpxConverter $converter): JsonResponse
     {
-        // TODO implement
+        $trip = $repository->findOneBy([
+            'user' => $this->getUser(),
+            'id' => $id
+        ]);
+
+        $gpx = $converter->makeGPXFile($trip)
+            ->toXML()
+            ->saveXML();
+
+        return new JsonResponse($gpx);
     }
 
     /**
      * Save new trip and handle validation and uploading of gpx file.
      *
-     * @Route("/trips", name="trip_store", methods={"POST"})
+     * @Route("/api/trips", name="trip_store", methods={"POST"})
      *
      * @param Request $request
      * @param GpxConverter $converter
@@ -87,7 +97,7 @@ class TripController extends AbstractController
     /**
      * Update trip info owned by the auth user.
      *
-     * @Route("/trips/{id}", name="trip_update", methods={"PUT", "PATCH"})
+     * @Route("/api/trips/{id}", name="trip_update", methods={"PUT", "PATCH"})
      *
      * @param int $id
      * @param Request $request
