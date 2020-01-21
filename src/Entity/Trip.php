@@ -52,9 +52,15 @@ class Trip
      */
     private $tracks;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Route", mappedBy="trip", orphanRemoval=true)
+     */
+    private $routes;
+
     public function __construct()
     {
         $this->tracks = new ArrayCollection();
+        $this->routes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -135,6 +141,37 @@ class Trip
             // set the owning side to null (unless already changed)
             if ($track->getTrip() === $this) {
                 $track->setTrip(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Route[]
+     */
+    public function getRoutes(): Collection
+    {
+        return $this->routes;
+    }
+
+    public function addRoute(Route $route): self
+    {
+        if (!$this->routes->contains($route)) {
+            $this->routes[] = $route;
+            $route->setTrip($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRoute(Route $route): self
+    {
+        if ($this->routes->contains($route)) {
+            $this->routes->removeElement($route);
+            // set the owning side to null (unless already changed)
+            if ($route->getTrip() === $this) {
+                $route->setTrip(null);
             }
         }
 
