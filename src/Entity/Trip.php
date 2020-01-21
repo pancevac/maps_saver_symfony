@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -44,6 +46,16 @@ class Trip
      * @ORM\JoinColumn(nullable=false)
      */
     private $user;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Track", mappedBy="trip", orphanRemoval=true)
+     */
+    private $tracks;
+
+    public function __construct()
+    {
+        $this->tracks = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -94,6 +106,37 @@ class Trip
     public function setUser(?User $user): self
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Track[]
+     */
+    public function getTracks(): Collection
+    {
+        return $this->tracks;
+    }
+
+    public function addTrack(Track $track): self
+    {
+        if (!$this->tracks->contains($track)) {
+            $this->tracks[] = $track;
+            $track->setTrip($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTrack(Track $track): self
+    {
+        if ($this->tracks->contains($track)) {
+            $this->tracks->removeElement($track);
+            // set the owning side to null (unless already changed)
+            if ($track->getTrip() === $this) {
+                $track->setTrip(null);
+            }
+        }
 
         return $this;
     }
