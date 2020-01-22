@@ -48,7 +48,7 @@ class Trip
     private $creator;
 
     /**
-     * @ORM\Column(type="text", nullable=true)
+     * @ORM\Column(type="json", nullable=true)
      * @Groups("main")
      */
     private $metadata;
@@ -110,12 +110,12 @@ class Trip
         return $this;
     }
 
-    public function getMetadata(): ?string
+    public function getMetadata(): ?array
     {
         return $this->metadata;
     }
 
-    public function setMetadata(?string $metadata): self
+    public function setMetadata(?array $metadata): self
     {
         $this->metadata = $metadata;
 

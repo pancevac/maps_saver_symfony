@@ -97,7 +97,7 @@ class TripController extends BaseController
         $trip->setName($request->get('name'));
         $trip->setUser($this->getUser());
         $trip->setCreator($converter->getCreator());
-        $trip->setMetadata(''); // TODO implement this as json
+        $trip->setMetadata($converter->getMetaData());
 
         // TODO implement and research validation logic
         /*$errors = $validator->validate($trip);
@@ -113,9 +113,7 @@ class TripController extends BaseController
             ->setWaypoints($converter->getWaypoints())
             ->save();
 
-        return $this->json([
-            'message' => 'Successfully saved trip!'
-        ]);
+        return new JsonResponse(['message' => 'Successfully saved trip!']);
     }
 
     /**
