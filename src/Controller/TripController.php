@@ -7,6 +7,7 @@ use App\Repository\TripRepository;
 use App\Service\TripService;
 use App\Service\GpxConverter;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -41,20 +42,13 @@ class TripController extends BaseController
      * Return specific trip resource owned by auth user.
      *
      * @Route("/api/trips/{id}", name="trip_show", methods={"GET"})
+     * @Entity("trip", expr="repository.findOwnedByAuthUser(id)")
      *
-     * @param int $id
-     * @param TripRepository $repository
+     * @param Trip $trip
      * @return JsonResponse
      */
-    public function show(int $id, TripRepository $repository): JsonResponse
+    public function show(Trip $trip): JsonResponse
     {
-        $trip = $repository->findOneBy([
-            'id' => $id,
-            'user' => $this->getUser()
-        ]);
-
-        if (!$trip) return $this->abort();
-
         return $this->json($trip, 200, [], ['groups' => 'main']);
     }
 
@@ -62,21 +56,14 @@ class TripController extends BaseController
      * Return generated gxp file owned by the auth user.
      *
      * @Route("/api/trips/gpx/{id}", name="trip_gpx", methods={"GET"})
+     * @Entity("trip", expr="repository.findOwnedByAuthUser(id)")
      *
-     * @param int $id
-     * @param TripRepository $repository
+     * @param Trip $trip
      * @param GpxConverter $converter
      * @return JsonResponse
      */
-    public function getGpx(int $id, TripRepository $repository, GpxConverter $converter): JsonResponse
+    public function getGpx(Trip $trip, GpxConverter $converter): JsonResponse
     {
-        $trip = $repository->findOneBy([
-            'user' => $this->getUser(),
-            'id' => $id
-        ]);
-
-        if (!$trip) return $this->abort();
-
         $gpx = $converter->makeGPXFile($trip)
             ->toXML()
             ->saveXML();
@@ -135,25 +122,18 @@ class TripController extends BaseController
      * Update trip info owned by the auth user.
      *
      * @Route("/api/trips/{id}", name="trip_update", methods={"PUT"})
+     * @Entity("trip", expr="repository.findOwnedByAuthUser(id)")
      *
-     * @param int $id
+     * @param Trip $trip
      * @param Request $request
      * @param EntityManagerInterface $em
      * @param ValidatorInterface $validator
      * @return JsonResponse
      */
-    public function update(int $id, Request $request, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
+    public function update(Trip $trip, Request $request, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
         $body = $request->getContent();
         $data = json_decode($body);
-
-        $repository = $em->getRepository(Trip::class);
-        $trip = $repository->findOneBy([
-            'user' => $this->getUser(),
-            'id' => $id
-        ]);
-
-        if (!$trip) return $this->abort();
 
         $trip->setName($data->name);
 
@@ -175,30 +155,17 @@ class TripController extends BaseController
      * Delete trip owned by the auth user.
      *
      * @Route("/api/trips/{id}", name="trip_delete", methods={"DELETE"})
+     * @Entity("trip", expr="repository.findOwnedByAuthUser(id)")
      *
-     * @param int $id
+     * @param Trip $trip
      * @param EntityManagerInterface $entityManager
      * @return JsonResponse
      */
-    public function delete(int $id, EntityManagerInterface $entityManager): JsonResponse
+    public function delete(Trip $trip, EntityManagerInterface $entityManager): JsonResponse
     {
-        $repository = $entityManager->getRepository(Trip::class);
-
-        $trip = $repository->findOneBy([
-            'user' => $this->getUser(),
-            'id' => $id
-        ]);
-
-        if (!$trip) return $this->abort();
-
         $entityManager->remove($trip);
         $entityManager->flush();
 
         return new JsonResponse(['message' => 'Successfully deleted trip.']);
-    }
-
-    private function abort(int $status = 404)
-    {
-        return new JsonResponse(['message' => 'Resource not found!'], 404);
     }
 }
