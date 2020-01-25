@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Trip;
+use App\Form\TripType;
 use App\Repository\TripRepository;
 use App\Service\TripService;
 use App\Service\GpxConverter;
@@ -12,7 +13,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class TripController extends BaseController
 {
@@ -85,6 +85,17 @@ class TripController extends BaseController
      */
     public function store(Request $request, GpxConverter $converter, TripService $tripService): JsonResponse
     {
+        // Create form
+        $trip = new Trip();
+        $form = $this->createForm(TripType::class, $trip);
+
+        // Post the data to the form
+        $form->submit($request->request->all());
+
+        if (!$form->isValid()) {
+            return new JsonResponse(['message' => 'file extension must be gpx.'], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         // parse and load coordinates from gpx file
         try {
             $converter->load();
@@ -92,19 +103,10 @@ class TripController extends BaseController
             throw new HttpException(JsonResponse::HTTP_UNPROCESSABLE_ENTITY,'Error while loading gpx file!');
         }
 
-        // create trip
-        $trip = new Trip();
-        $trip->setName($request->get('name'));
+        // Set rest of fields for trip
         $trip->setUser($this->getUser());
         $trip->setCreator($converter->getCreator());
         $trip->setMetadata($converter->getMetaData());
-
-        // TODO implement and research validation logic
-        /*$errors = $validator->validate($trip);
-
-        if (count($errors) > 0) {
-            return new JsonResponse((string) $errors, JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
-        }*/
 
         // save trip with relations to db
         $tripService->setTrip($trip)
@@ -113,7 +115,7 @@ class TripController extends BaseController
             ->setWaypoints($converter->getWaypoints())
             ->save();
 
-        return new JsonResponse(['message' => 'Successfully saved trip!']);
+        return new JsonResponse(['message' => 'Successfully saved trip!'], JsonResponse::HTTP_CREATED);
     }
 
     /**
@@ -124,27 +126,27 @@ class TripController extends BaseController
      *
      * @param Trip $trip
      * @param Request $request
-     * @param EntityManagerInterface $em
-     * @param ValidatorInterface $validator
+     * @param EntityManagerInterface $entityManager
      * @return JsonResponse
      */
-    public function update(Trip $trip, Request $request, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
+    public function update(Trip $trip, Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
+        // Create form
+        $form = $this->createForm(TripType::class, $trip, ['disable_trip' => true]);
+
+        // Fetch the data to the form
         $body = $request->getContent();
-        $data = json_decode($body);
+        $data = json_decode($body, true);
 
-        $trip->setName($data->name);
+        $form->submit($data);
 
-        // Validate
-        $errors = $validator->validate($trip);
-
-        if (count($errors) > 0) {
+        if (!$form->isValid()) {
             return new JsonResponse([
-                'error' => 'Bla bla'
-            ]);
+                'message' => $form->getErrors()->current()->getMessage()
+            ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $em->flush();
+        $entityManager->flush();
 
         return new JsonResponse(['message' => 'Trip successfully updated.']);
     }
