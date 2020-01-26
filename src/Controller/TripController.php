@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Trip;
 use App\Form\TripType;
 use App\Repository\TripRepository;
+use App\Service\FormErrorsSerializer;
 use App\Service\TripService;
 use App\Service\GpxConverter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -81,9 +82,10 @@ class TripController extends BaseController
      * @param Request $request
      * @param GpxConverter $converter
      * @param TripService $tripService
+     * @param FormErrorsSerializer $errorsSerializer
      * @return JsonResponse
      */
-    public function store(Request $request, GpxConverter $converter, TripService $tripService): JsonResponse
+    public function store(Request $request, GpxConverter $converter, TripService $tripService, FormErrorsSerializer $errorsSerializer): JsonResponse
     {
         // Create form
         $trip = new Trip();
@@ -93,7 +95,10 @@ class TripController extends BaseController
         $form->submit($request->request->all());
 
         if (!$form->isValid()) {
-            return new JsonResponse(['message' => 'file extension must be gpx.'], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+            return new JsonResponse(
+                $errorsSerializer->getErrors($form),
+                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
+            );
         }
 
         // parse and load coordinates from gpx file
@@ -127,9 +132,10 @@ class TripController extends BaseController
      * @param Trip $trip
      * @param Request $request
      * @param EntityManagerInterface $entityManager
+     * @param FormErrorsSerializer $errorsSerializer
      * @return JsonResponse
      */
-    public function update(Trip $trip, Request $request, EntityManagerInterface $entityManager): JsonResponse
+    public function update(Trip $trip, Request $request, EntityManagerInterface $entityManager, FormErrorsSerializer $errorsSerializer): JsonResponse
     {
         // Create form
         $form = $this->createForm(TripType::class, $trip, ['disable_trip' => true]);
@@ -141,9 +147,10 @@ class TripController extends BaseController
         $form->submit($data);
 
         if (!$form->isValid()) {
-            return new JsonResponse([
-                'message' => $form->getErrors()->current()->getMessage()
-            ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+            return new JsonResponse(
+                $errorsSerializer->getErrors($form),
+                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
+            );
         }
 
         $entityManager->flush();
