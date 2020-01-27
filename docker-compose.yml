@@ -3,7 +3,10 @@ services:
 
   #PHP Service
   app:
-    image: pancevac/ministudio-php7.3:2.0
+    build:
+      context: .
+      dockerfile: ./.docker/php/Dockerfile
+    image: pancevac/ministudio-php7.2:1.0
     container_name: symfony_app
     restart: unless-stopped
     tty: true
