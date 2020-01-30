@@ -15,6 +15,11 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
+        docs:
+            methods: [GET]
+            pattern: ^/api/doc
+            security: false
+
         public:
             methods: [POST]
             pattern: ^/api/register
@@ -50,4 +55,5 @@ security:
     access_control:
         - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/doc, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
