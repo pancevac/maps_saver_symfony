@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Swagger\Annotations as SWG;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -21,6 +22,7 @@ class Trip
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      * @Groups("main")
+     * @SWG\Property(description="The unique identifier of the trip.")
      */
     private $id;
 
@@ -34,6 +36,7 @@ class Trip
      *     minMessage = "Name of trip must be at least {{ limit }} characters long",
      *     maxMessage = "Name of trip cannot be longer than {{ limit }} characters"
      * )
+     * @SWG\Property(type="string", description="The trip name.")
      */
     private $name;
 
@@ -44,12 +47,34 @@ class Trip
      *     max="100",
      *     maxMessage = "Creator name cannot be longer than {{ limit }} characters"
      * )
+     * @SWG\Property(type="string", description="The trip name.")
      */
     private $creator;
 
     /**
      * @ORM\Column(type="json", nullable=true)
      * @Groups("main")
+     * @SWG\Property(
+     *     type="object",
+     *     description="The metadata additional info.",
+     *     @SWG\Property(property="desc", type="string"),
+     *     @SWG\Property(property="name", type="string"),
+     *     @SWG\Property(property="time", type="string"),
+     *     @SWG\Property(property="author", type="string"),
+     *     @SWG\Property(property="bounds", type="string"),
+     *     @SWG\Property(property="keywords", type="string"),
+     *     @SWG\Property(property="copyright", type="string"),
+     *     @SWG\Property(property="extensions", type="string"),
+     *     @SWG\Property(
+     *         property="links",
+     *         type="array",
+     *         @SWG\Items(
+     *             @SWG\Property(property="href", type="string"),
+     *             @SWG\Property(property="text", type="string"),
+     *             @SWG\Property(property="type", type="string")
+     *         )
+     *     )
+     * )
      */
     private $metadata;
 
