@@ -1,0 +1,61 @@
+nelmio_api_doc:
+    documentation:
+
+        info:
+            title: Maps Saver Service
+            description: App for saving and showing coordinates from GPX files using various services as Google Maps etc.
+            version: 1.0.0
+
+        # This will generate auth token form in swagger UI.
+        securityDefinitions:
+            Bearer:
+                type: apiKey
+                description: 'Value: Bearer {jwt}'
+                name: Authorization
+                in: header
+            security:
+                - Bearer: []
+
+        # Define custom paths
+        paths:
+            # Define login which for some reason can't be seen from vendor lexik_jwt
+            # See https://swagger.io/docs/specification/describing-parameters/
+            /api/login:
+                post:
+                    summary: 'Login user.'
+                    consumes:
+                        - application/json
+                    parameters:
+                        - in: body
+                          name: body
+                          type: json
+                          description: User credentials
+                          schema:
+                              type: object
+                              required:
+                                  - username
+                                  - password
+                              properties:
+                                  username:
+                                      type: string
+                                      description: 'Email address of the user.'
+                                      example: test@mail.com
+                                  password:
+                                      type: string
+                                      description: 'User password'
+                                      example: password123
+                    responses:
+                        '200':
+                            description: 'Return JWT token'
+                            schema:
+                                type: object
+                                properties:
+                                    token:
+                                        type: string
+                                        description: 'JTW token'
+
+
+
+    areas: # to filter documented areas
+        path_patterns:
+            - ^/api(?!/doc$) # Accepts routes under /api except /api/doc

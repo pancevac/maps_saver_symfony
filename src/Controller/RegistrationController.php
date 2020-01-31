@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Service\FormErrorsSerializer;
+use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,7 +15,31 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 class RegistrationController extends AbstractController
 {
     /**
-     * @Route("/api/register", name="app_register")
+     * Register new user.
+     *
+     * @Route("/api/register", name="app_register", methods={"POST"})
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     type="json",
+     *     description="Body of the request, containing email, username and password fields.",
+     *     @SWG\Schema(
+     *         type="object",
+     *         required={"email", "name", "password"},
+     *         @SWG\Property(property="email", type="string", description="Email address of new user.", example="test@mail.com"),
+     *         @SWG\Property(property="name", type="string", description="Username of new user.", example="username"),
+     *         @SWG\Property(property="password", type="string", description="Raw password of new user.", example="password123"),
+     *     )
+     * )
+     * @SWG\Response(
+     *     response="200",
+     *     description="Object with message about successful operation and (option) redirect login route.",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(property="message", type="string"),
+     *         @SWG\Property(property="redirect", type="string")
+     *     )
+     * )
      *
      * @param Request $request
      * @param UserPasswordEncoderInterface $passwordEncoder

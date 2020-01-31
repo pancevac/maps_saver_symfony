@@ -9,18 +9,38 @@ use App\Service\FormErrorsSerializer;
 use App\Service\TripService;
 use App\Service\GpxConverter;
 use Doctrine\ORM\EntityManagerInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
+use Swagger\Annotations as SWG;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class TripController
+ * @package App\Controller
+ * @Security(name="Bearer")
+ */
 class TripController extends BaseController
 {
     /**
      * Return list of trips resource owned by auth user.
      *
      * @Route("/api/trips", name="trip", methods={"GET"})
+     * @SWG\Response(
+     *     response="200",
+     *     description="Get collection of the trips resources.",
+     *     @SWG\Schema(
+     *          type="object",
+     *          @SWG\Property(
+     *              property="data",
+     *              type="array",
+     *              @SWG\Items(ref=@Model(type=Trip::class, groups={"main"}))
+     *          )
+     *     )
+     * )
      *
      * @param TripRepository $repository
      * @return JsonResponse
@@ -44,6 +64,17 @@ class TripController extends BaseController
      *
      * @Route("/api/trips/{id}", name="trip_show", methods={"GET"})
      * @Entity("trip", expr="repository.findOwnedByAuthUser(id)")
+     * @SWG\Parameter(
+     *     name="id",
+     *     in="path",
+     *     type="integer",
+     *     description="The unique identifier of the trip."
+     * )
+     * @SWG\Response(
+     *     response="200",
+     *     description="The trip resource.",
+     *     @Model(type=Trip::class, groups={"main"})
+     * )
      *
      * @param Trip $trip
      * @return JsonResponse
@@ -58,6 +89,17 @@ class TripController extends BaseController
      *
      * @Route("/api/trips/gpx/{id}", name="trip_gpx", methods={"GET"})
      * @Entity("trip", expr="repository.findOwnedByAuthUser(id)")
+     * @SWG\Parameter(
+     *     name="id",
+     *     in="path",
+     *     type="integer",
+     *     description="The unique identifier of the trip."
+     * )
+     * @SWG\Response(
+     *     response="200",
+     *     description="The generated gpx trip file.",
+     *     @SWG\Schema(type="object", @SWG\Property(property="response",type="string"))
+     * )
      *
      * @param Trip $trip
      * @param GpxConverter $converter
@@ -78,6 +120,23 @@ class TripController extends BaseController
      * Save new trip and handle validation and uploading of gpx file.
      *
      * @Route("/api/trips", name="trip_store", methods={"POST"})
+     * @SWG\Parameter(
+     *     name="name",
+     *     in="formData",
+     *     type="string",
+     *     description="Name of the new trip."
+     * )
+     * @SWG\Parameter(
+     *     name="trip",
+     *     in="formData",
+     *     type="file",
+     *     description="Uploaded GPX file."
+     * )
+     * @SWG\Response(
+     *     response="201",
+     *     description="Message about successful operation.",
+     *     @SWG\Schema(type="object", @SWG\Property(property="message", type="string"))
+     * )
      *
      * @param Request $request
      * @param GpxConverter $converter
@@ -128,6 +187,28 @@ class TripController extends BaseController
      *
      * @Route("/api/trips/{id}", name="trip_update", methods={"PUT"})
      * @Entity("trip", expr="repository.findOwnedByAuthUser(id)")
+     * @SWG\Parameter(
+     *     name="id",
+     *     in="path",
+     *     type="integer",
+     *     description="The unique identifier of the trip."
+     * )
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     type="json",
+     *     description="Form for updating trip.",
+     *     @SWG\Schema(
+     *         type="object",
+     *         required={"name"},
+     *         @SWG\Property(property="name", type="string", description="New name of trip.")
+     *     )
+     * )
+     * @SWG\Response(
+     *     response="200",
+     *     description="Message about successful operation.",
+     *     @SWG\Schema(type="object", @SWG\Property(property="message", type="string"))
+     * )
      *
      * @param Trip $trip
      * @param Request $request
@@ -163,6 +244,17 @@ class TripController extends BaseController
      *
      * @Route("/api/trips/{id}", name="trip_delete", methods={"DELETE"})
      * @Entity("trip", expr="repository.findOwnedByAuthUser(id)")
+     * @SWG\Parameter(
+     *     name="id",
+     *     in="path",
+     *     type="integer",
+     *     description="The unique identifier of the trip."
+     * )
+     * @SWG\Response(
+     *     response="201",
+     *     description="Message about successful operation.",
+     *     @SWG\Schema(type="object", @SWG\Property(property="message", type="string"))
+     * )
      *
      * @param Trip $trip
      * @param EntityManagerInterface $entityManager

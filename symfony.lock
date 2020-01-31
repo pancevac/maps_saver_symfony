@@ -93,6 +93,9 @@
     "doctrine/reflection": {
         "version": "v1.1.0"
     },
+    "exsyst/swagger": {
+        "version": "v0.4.1"
+    },
     "fzaninotto/faker": {
         "version": "v1.9.1"
     },
@@ -120,6 +123,19 @@
     "namshi/jose": {
         "version": "7.2.3"
     },
+    "nelmio/api-doc-bundle": {
+        "version": "3.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "3.0",
+            "ref": "c8e0c38e1a280ab9e37587a8fa32b251d5bc1c94"
+        },
+        "files": [
+            "config/packages/nelmio_api_doc.yaml",
+            "config/routes/nelmio_api_doc.yaml"
+        ]
+    },
     "nelmio/cors-bundle": {
         "version": "1.5",
         "recipe": {
@@ -143,6 +159,15 @@
     },
     "php": {
         "version": "7.2"
+    },
+    "phpdocumentor/reflection-common": {
+        "version": "2.0.0"
+    },
+    "phpdocumentor/reflection-docblock": {
+        "version": "4.3.4"
+    },
+    "phpdocumentor/type-resolver": {
+        "version": "1.0.1"
     },
     "psr/cache": {
         "version": "1.0.1"
@@ -192,17 +217,8 @@
             "config/packages/stof_doctrine_extensions.yaml"
         ]
     },
-    "symfony/apache-pack": {
-        "version": "1.0",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "master",
-            "version": "1.0",
-            "ref": "410b9325a37ef86f1e47262c61738f6202202bca"
-        },
-        "files": [
-            "public/.htaccess"
-        ]
+    "symfony/asset": {
+        "version": "v4.4.3"
     },
     "symfony/cache": {
         "version": "v4.4.2"
@@ -348,6 +364,9 @@
     "symfony/property-access": {
         "version": "v4.4.2"
     },
+    "symfony/property-info": {
+        "version": "v4.4.3"
+    },
     "symfony/routing": {
         "version": "4.2",
         "recipe": {
@@ -415,6 +434,9 @@
             "templates/base.html.twig"
         ]
     },
+    "symfony/twig-pack": {
+        "version": "v1.0.0"
+    },
     "symfony/validator": {
         "version": "4.3",
         "recipe": {
@@ -451,13 +473,22 @@
     "symfony/yaml": {
         "version": "v4.4.2"
     },
+    "twig/extra-bundle": {
+        "version": "v3.0.1"
+    },
     "twig/twig": {
         "version": "v3.0.1"
+    },
+    "webmozart/assert": {
+        "version": "1.6.0"
     },
     "zendframework/zend-code": {
         "version": "3.4.1"
     },
     "zendframework/zend-eventmanager": {
         "version": "3.2.1"
+    },
+    "zircote/swagger-php": {
+        "version": "2.0.15"
     }
 }
