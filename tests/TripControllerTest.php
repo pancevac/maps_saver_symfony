@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Service\GpxConverter;
 use Liip\TestFixturesBundle\Test\FixturesTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class TripControllerTest extends AbstractControllerTest
@@ -152,35 +153,27 @@ class TripControllerTest extends AbstractControllerTest
         $this->assertSame(['message' => 'Successfully saved trip!'], $response);
     }
 
-    /*public function a_auth_user_can_not_create_trip_with_same_name()
+    /** @test */
+    public function a_auth_user_can_not_create_trip_with_same_name()
     {
-        $user = $this->userRepository->findOneBy([]);
-        $firstClient = $this->createAuthenticatedClient($user->getEmail());
-        $secondClient = $this->createAuthenticatedClient($user->getEmail());
-
-        $firstClient->insulate(false);
-        $secondClient->insulate(false);
+        /** @var Trip $trip */
+        $trip = $this->getAuthUser()->getTrips()->first();
 
         $tripFilePath = self::$container->get('kernel')->getProjectDir() . '/tests/files/map.gpx';
 
         $gpxFile = new UploadedFile($tripFilePath, 'map.gpx', 'application/gpx+xml', null);
 
-        $firstClient->request(
+        $client = $this->createAuthenticatedClient();
+
+        $client->request(
             'POST',
             '/api/trips',
-            ['name' => 'Test trip'],
+            ['name' => $trip->getName()],
             ['trip' => $gpxFile]
         );
 
-        $secondClient->request(
-            'POST',
-            '/api/trips',
-            ['name' => 'Test trip'],
-            ['trip' => $gpxFile]
-        );
-
-        dd($secondClient->getResponse()->getContent());
-    }*/
+        $this->assertSame(JsonResponse::HTTP_UNPROCESSABLE_ENTITY, $client->getResponse()->getStatusCode());
+    }
 
     /** @test */
     public function a_auth_user_can_update_trip_name()
@@ -207,6 +200,26 @@ class TripControllerTest extends AbstractControllerTest
         $this->entityManager->refresh($trip);
 
         $this->assertSame('Updated trip name', $trip->getName());
+    }
+
+    /** @test */
+    public function a_auth_user_can_not_update_trip_with_already_existing_name()
+    {
+        $client = $this->createAuthenticatedClient();
+
+        /** @var Trip[] $trip */
+        $trips = $this->user->getTrips();
+
+        $client->request(
+            'PUT',
+            '/api/trips/' . $trips[1]->getId(),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => $trips[0]->getName()])
+        );
+
+        $this->assertSame(JsonResponse::HTTP_UNPROCESSABLE_ENTITY, $client->getResponse()->getStatusCode());
     }
 
     /** @test */

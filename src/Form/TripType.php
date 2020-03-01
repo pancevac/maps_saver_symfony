@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Trip;
+use App\Validator\UniqueTrip;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -15,7 +16,11 @@ class TripType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('name', TextType::class)
+            ->add('name', TextType::class, [
+                'constraints' => [
+                    new UniqueTrip(['trip_entity' => $options['trip_entity']])
+                ]
+            ])
             ->add('trip', FileType::class, [
                 'mapped' => false,
                 'disabled' => $options['disable_trip'],
@@ -34,6 +39,7 @@ class TripType extends AbstractType
             'data_class' => Trip::class,
             'csrf_protection' => false,
             'disable_trip' => false,
+            'trip_entity' => null,
         ]);
     }
 }

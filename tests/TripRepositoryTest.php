@@ -17,11 +17,15 @@ class TripRepositoryTest extends KernelTestCase
      * @var TripRepository
      */
     private $tripRepository;
+
+    /**
+     * @var UserRepository
+     */
     private $userRepository;
 
     protected function setUp(): void
     {
-        $kernel = self::bootKernel();
+        self::bootKernel();
 
         $this->loadFixtures(['App\DataFixtures\TripFixture']);
 
