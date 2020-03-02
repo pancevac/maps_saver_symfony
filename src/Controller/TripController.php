@@ -219,7 +219,11 @@ class TripController extends BaseController
     public function update(Trip $trip, Request $request, EntityManagerInterface $entityManager, FormErrorsSerializer $errorsSerializer): JsonResponse
     {
         // Create form
-        $form = $this->createForm(TripType::class, $trip, ['disable_trip' => true]);
+        $form = $this->createForm(
+            TripType::class,
+            $trip,
+            ['disable_trip' => true, 'trip_entity' => $trip]
+        );
 
         // Fetch the data to the form
         $body = $request->getContent();

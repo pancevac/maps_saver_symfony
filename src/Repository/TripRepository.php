@@ -49,32 +49,27 @@ class TripRepository extends ServiceEntityRepository
             ->getSingleResult();
     }
 
-    // /**
-    //  * @return Trip[] Returns an array of Trip objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * Return trip by some criteria, owned by currently authenticated user.
+     *
+     * @param int $exceptId
+     * @param array $criteria
+     * @param null $orderBy
+     * @return Trip|null
+     * @throws NonUniqueResultException
+     */
+    public function findOneExcept(int $exceptId, array $criteria, $orderBy = null): ?Trip
     {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('t.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+        $qb = $this->createQueryBuilder('t');
 
-    /*
-    public function findOneBySomeField($value): ?Trip
-    {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.exampleField = :val')
-            ->setParameter('val', $value)
+        foreach ($criteria as $criterionKey => $criterionValue) {
+            $qb->andWhere("t.$criterionKey = :$criterionKey");
+            $qb->setParameter($criterionKey, $criterionValue);
+        }
+
+        return $qb
+            ->andwhere($qb->expr()->neq('t.id', $exceptId))
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getOneOrNullResult();
     }
-    */
 }
