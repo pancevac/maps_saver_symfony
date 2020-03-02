@@ -2,6 +2,7 @@
 
 namespace App\Tests;
 
+use App\Entity\Trip;
 use App\Entity\User;
 use App\Repository\TripRepository;
 use App\Repository\UserRepository;
@@ -59,5 +60,21 @@ class TripRepositoryTest extends KernelTestCase
         $queryTrip = $this->tripRepository->findOwnedByAuthUser($randomTrip->getId());
 
         $this->assertEquals($randomTrip->getUser()->getId(), $queryTrip->getUser()->getId());
+    }
+
+    /** @test */
+    public function test_find_one_except()
+    {
+        /** @var Trip[] $trips */
+        $allTrips = $this->tripRepository->findAll();
+
+        // take for example, first trip in array
+        $exceptionTrip = $allTrips[0];
+
+        $expectedNull = $this->tripRepository->findOneExcept($exceptionTrip->getId(), ['name' => $exceptionTrip->getName()]);
+        $trip = $this->tripRepository->findOneExcept($exceptionTrip->getId(), ['name' => $allTrips[1]->getName()]);
+
+        $this->assertNull($expectedNull);
+        $this->assertEquals($allTrips[1], $trip);
     }
 }
