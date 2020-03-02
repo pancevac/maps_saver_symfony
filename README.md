@@ -45,3 +45,13 @@ $ php bin/console doctrine:migrations:migrate
 ```
 $ php bin/console doctrine:fixtures:load
 ```
+
+## Testing
+First copy phpunit.xml config
+```
+$ cp phpunit.xml.dist phpunit.xml 
+```
+#### Run test
+```
+$ php bin/phpunit
+```
