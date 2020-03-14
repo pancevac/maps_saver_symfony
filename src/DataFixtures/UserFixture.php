@@ -25,6 +25,7 @@ class UserFixture extends BaseFixture
             $user->setEmail("user$i@mail.com");
             $user->setUsername($this->faker->firstName);
             $user->setPassword($this->passwordEncoder->encodePassword($user, 'password'));
+            $user->setActive(true);
 
             return $user;
         });
