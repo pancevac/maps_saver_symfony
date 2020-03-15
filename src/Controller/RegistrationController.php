@@ -5,10 +5,12 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Service\FormErrorsSerializer;
+use App\Service\Mailer;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
@@ -45,9 +47,15 @@ class RegistrationController extends AbstractController
      * @param UserPasswordEncoderInterface $passwordEncoder
      *
      * @param FormErrorsSerializer $errorsSerializer
+     * @param Mailer $mailer
      * @return JsonResponse
      */
-    public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder, FormErrorsSerializer $errorsSerializer): JsonResponse
+    public function register(
+        Request $request,
+        UserPasswordEncoderInterface $passwordEncoder,
+        FormErrorsSerializer $errorsSerializer,
+        Mailer $mailer
+    ): JsonResponse
     {
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
@@ -69,10 +77,11 @@ class RegistrationController extends AbstractController
                     $form->get('password')->getData()
                 )
             );
-
+            $user->setConfirmationToken($this->generateToken());
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($user);
             $entityManager->flush();
+            $mailer->sendEmailConfirmationMail($user);
 
             return new JsonResponse([
                 'message' => 'Successfully registered user',
@@ -84,5 +93,93 @@ class RegistrationController extends AbstractController
             $errorsSerializer->getErrors($form),
             JsonResponse::HTTP_UNPROCESSABLE_ENTITY
         );
+    }
+
+    /**
+     * Handle activation of user account.
+     *
+     * @Route("/account/confirm/{token}/{email}", name="confirm_account", methods={"GET"})
+     *
+     * @param string $token
+     * @param string $email
+     * @return Response
+     */
+    public function confirmAccount(string $token, string $email): Response
+    {
+        $em = $this->getDoctrine()->getManager();
+        $user = $em->getRepository(User::class)->findOneBy([
+            'email' => $email,
+            'confirmationToken' => $token,
+        ]);
+
+        if (!$user) {
+            return new Response('Account can not be verified!', 400);
+        }
+        if ($user->getActive()) {
+            return new Response('Account has been already activated!', 400);
+        }
+
+        $user->setActive(true);
+        $em->flush();
+
+        return new Response('Account activated! Visit <a href="https://maps-saver.netlify.com/login">Login Page</a>');
+    }
+
+    /**
+     * @Route("/api/account/resend/{email}", name="resend_confirm", methods={"GET"})
+     * @SWG\Parameter(
+     *     name="email",
+     *     in="path",
+     *     type="string",
+     *     description="Email address to resend activation link.",
+     * )
+     * @SWG\Response(
+     *     response="200",
+     *     description="The success message",
+     *     @SWG\Schema(
+     *          type="object",
+     *          @SWG\Property(
+     *              property="message",
+     *              type="string"
+     *          )
+     *     )
+     * )
+     * @SWG\Response(
+     *     response="400",
+     *     description="Return error message",
+     *     @SWG\Schema(
+     *          type="object",
+     *          @SWG\Property(
+     *              property="error",
+     *              type="string"
+     *          )
+     *     )
+     * )
+     *
+     * @param string $email
+     * @param Mailer $mailer
+     * @return JsonResponse
+     */
+    public function resendEmailConfirmationMail(string $email, Mailer $mailer): JsonResponse
+    {
+        $em = $this->getDoctrine()->getManager();
+        $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
+
+        if (!$user) return new JsonResponse(['error' => 'Unknown user account'], JsonResponse::HTTP_BAD_REQUEST);
+        if ($user->getActive()) return new JsonResponse(['error' => 'Account has been already activated!'], JsonResponse::HTTP_BAD_REQUEST);
+
+        $user->setConfirmationToken($this->generateToken());
+        $em->flush();
+
+        $mailer->sendEmailConfirmationMail($user);
+
+        return new JsonResponse([
+            'message' => 'Activation link has been resend. Please check specified email address!'
+        ]);
+    }
+
+    private function generateToken()
+    {
+        return rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Utils\UserEmailActivationInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -14,7 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  * @UniqueEntity(fields={"email"}, message="There is already an account with this email")
  */
-class User implements UserInterface
+class User implements UserInterface, UserEmailActivationInterface
 {
     /**
      * @ORM\Id()
@@ -52,6 +53,16 @@ class User implements UserInterface
      * @ORM\OneToMany(targetEntity="App\Entity\Trip", mappedBy="user", orphanRemoval=true)
      */
     private $trips;
+
+    /**
+     * @ORM\Column(type="boolean", options={"default": false})
+     */
+    private $active = false;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true, unique=true)
+     */
+    private $confirmationToken;
 
     public function __construct()
     {
@@ -170,6 +181,30 @@ class User implements UserInterface
                 $trip->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getActive(): ?bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(bool $active): UserEmailActivationInterface
+    {
+        $this->active = $active;
+
+        return $this;
+    }
+
+    public function getConfirmationToken(): ?string
+    {
+        return $this->confirmationToken;
+    }
+
+    public function setConfirmationToken(?string $confirmationToken): UserEmailActivationInterface
+    {
+        $this->confirmationToken = $confirmationToken;
 
         return $this;
     }
