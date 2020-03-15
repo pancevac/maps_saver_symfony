@@ -108,7 +108,7 @@ class TripControllerTest extends AbstractControllerTest
 
         $client->request(
             'GET',
-            '/api/trips/' . $trips[0]->getId()
+            '/api/trips/' . array_shift($trips)->getId()
         );
     }
 
@@ -237,7 +237,7 @@ class TripControllerTest extends AbstractControllerTest
 
         $client->request(
             'PUT',
-            '/api/trips/' . $trips[0]->getId(),
+            '/api/trips/' . array_shift($trips)->getId(),
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
@@ -278,7 +278,7 @@ class TripControllerTest extends AbstractControllerTest
 
         $client->request(
             'DELETE',
-            '/api/trips/' . $trips[0]->getId()
+            '/api/trips/' . array_shift($trips)->getId()
         );
     }
 
