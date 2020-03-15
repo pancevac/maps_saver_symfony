@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Controller;
 
 use App\Entity\Trip;
 use App\Entity\User;
 use App\Service\GpxConverter;
+use App\Tests\AbstractControllerTest;
 use Liip\TestFixturesBundle\Test\FixturesTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;

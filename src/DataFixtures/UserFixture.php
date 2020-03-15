@@ -26,10 +26,16 @@ class UserFixture extends BaseFixture
             $user->setUsername($this->faker->firstName);
             $user->setPassword($this->passwordEncoder->encodePassword($user, 'password'));
             $user->setActive(true);
+            $user->setConfirmationToken($this->generateToken());
 
             return $user;
         });
 
         $manager->flush();
+    }
+
+    private function generateToken()
+    {
+        return rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
     }
 }

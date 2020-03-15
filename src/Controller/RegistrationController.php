@@ -5,29 +5,17 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Service\FormErrorsSerializer;
+use App\Service\Mailer;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class RegistrationController extends AbstractController
 {
-    /**
-     * @var MailerInterface
-     */
-    private $mailer;
-
-    public function __construct(MailerInterface $mailer)
-    {
-        $this->mailer = $mailer;
-    }
-
     /**
      * Register new user.
      *
@@ -59,9 +47,15 @@ class RegistrationController extends AbstractController
      * @param UserPasswordEncoderInterface $passwordEncoder
      *
      * @param FormErrorsSerializer $errorsSerializer
+     * @param Mailer $mailer
      * @return JsonResponse
      */
-    public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder, FormErrorsSerializer $errorsSerializer): JsonResponse
+    public function register(
+        Request $request,
+        UserPasswordEncoderInterface $passwordEncoder,
+        FormErrorsSerializer $errorsSerializer,
+        Mailer $mailer
+    ): JsonResponse
     {
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
@@ -87,7 +81,7 @@ class RegistrationController extends AbstractController
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($user);
             $entityManager->flush();
-            $this->sendEmailConfirmationMail($user);
+            $mailer->sendEmailConfirmationMail($user);
 
             return new JsonResponse([
                 'message' => 'Successfully registered user',
@@ -163,9 +157,10 @@ class RegistrationController extends AbstractController
      * )
      *
      * @param string $email
+     * @param Mailer $mailer
      * @return JsonResponse
      */
-    public function resendEmailConfirmationMail(string $email): JsonResponse
+    public function resendEmailConfirmationMail(string $email, Mailer $mailer): JsonResponse
     {
         $em = $this->getDoctrine()->getManager();
         $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
@@ -176,7 +171,7 @@ class RegistrationController extends AbstractController
         $user->setConfirmationToken($this->generateToken());
         $em->flush();
 
-        $this->sendEmailConfirmationMail($user);
+        $mailer->sendEmailConfirmationMail($user);
 
         return new JsonResponse([
             'message' => 'Activation link has been resend. Please check specified email address!'
@@ -186,21 +181,5 @@ class RegistrationController extends AbstractController
     private function generateToken()
     {
         return rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
-    }
-
-    private function sendEmailConfirmationMail(User $user)
-    {
-        $confirmationLink = $this->generateUrl('confirm_account', [
-            'token' => $user->getConfirmationToken(),
-            'email' => $user->getUsername()
-        ], UrlGeneratorInterface::ABSOLUTE_URL);
-
-        $email = (new Email())
-            ->from('hello@mail.com')
-            ->to($user->getEmail())
-            ->subject('Maps Saver Email confirmation.')
-            ->text('Please confirm your email address on link: ' . $confirmationLink);
-
-        $this->mailer->send($email);
     }
 }
