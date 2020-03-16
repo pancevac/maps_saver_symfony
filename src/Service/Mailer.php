@@ -43,4 +43,19 @@ class Mailer
 
         $this->mailer->send($email);
     }
+
+    public function sendResetPasswordEmail(User $user)
+    {
+        $appClient = 'https://maps-saver.netlify.com'; // not great solution for now...
+        $token = $user->getConfirmationToken();
+        $link = "$appClient/reset-password/$token";
+
+        $email = (new Email())
+            ->from('service@ms-mail.sinisab.tk')
+            ->to($user->getEmail())
+            ->subject('Maps Saver Reset Password Request.')
+            ->text('Link for changing your account password: ' . $link);
+
+        $this->mailer->send($email);
+    }
 }
