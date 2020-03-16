@@ -10,7 +10,8 @@ use Symfony\Component\Routing\RouterInterface;
 
 class MailerTest extends TestCase
 {
-    public function test_send_email_confirmation_mail()
+    /** @test */
+    public function testSendEmailConfirmationMail()
     {
         $symfonyMailer = $this->createMock(MailerInterface::class);
         $symfonyMailer->expects($this->once())
@@ -25,5 +26,22 @@ class MailerTest extends TestCase
 
         $mailerService = new Mailer($symfonyMailer, $router);
         $mailerService->sendEmailConfirmationMail($user);
+    }
+
+    /** @test */
+    public function testSendResetPasswordEmail()
+    {
+        $symfonyMailer = $this->createMock(MailerInterface::class);
+        $symfonyMailer->expects($this->once())
+            ->method('send');
+
+        $router = $this->createMock(RouterInterface::class);
+
+        $user = new User();
+        $user->setEmail('test@mail.com');
+        $user->setConfirmationToken('testToken123');
+
+        $mailerService = new Mailer($symfonyMailer, $router);
+        $mailerService->sendResetPasswordEmail($user);
     }
 }
