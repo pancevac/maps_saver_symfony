@@ -52,6 +52,9 @@ class AccountController extends AbstractController
     public function resetPassword(User $user, Mailer $mailer): JsonResponse
     {
         $user->setConfirmationToken($this->generateToken());
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($user);
+        $em->flush();
 
         $mailer->sendResetPasswordEmail($user);
 

@@ -48,7 +48,7 @@ class Mailer
     {
         $appClient = 'https://maps-saver.netlify.com'; // not great solution for now...
         $token = $user->getConfirmationToken();
-        $link = "$appClient/reset-password/$token";
+        $link = "$appClient/new-password/$token";
 
         $email = (new Email())
             ->from('service@ms-mail.sinisab.tk')
