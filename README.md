@@ -3,8 +3,8 @@
 REST API service for Maps Saver App <br>
 Built with Symfony Framework v4.4
 
-#### API Documentation [https://ms-service.sinisab.tk/api/doc](https://ms-service.sinisab.tk/api/doc)
-API doc config for Postman is available on [https://ms-service.sinisab.tk/api/doc.json](https://ms-service.sinisab.tk/api/doc.json)
+#### API Documentation [https://maps-saver-symfony.herokuapp.com/api/doc](https://maps-saver-symfony.herokuapp.com/api/doc)
+API doc config for Postman is available on [https://maps-saver-symfony.herokuapp.com/api/doc.json](https://maps-saver-symfony.herokuapp.com/api/doc.json)
 
 ## Project setup locally
 ```
